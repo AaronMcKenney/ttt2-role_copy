@@ -34,13 +34,13 @@ SWEP.AutoSwitchTo = false
 SWEP.AutoSwitchFrom = false
 
 --Gun stats
-SWEP.Primary.Delay = 1
+SWEP.Primary.Delay = 0.5
 SWEP.Primary.Recoil = 6
 SWEP.Primary.Automatic = false
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = -1
 SWEP.Secondary = SWEP.Primary
-SWEP.Delay = 1
+SWEP.Delay = 0.5
 
 --Misc.
 SWEP.InLoadoutFor = nil
@@ -132,10 +132,7 @@ function SWEP:PrimaryAttack()
 		return
 	end
 	
-	if GetRoundState() ~= ROUND_ACTIVE then
-		self:SetNextPrimaryFire(CurTime() + self.Delay)
-		return
-	end
+	COPYCAT_DATA.SendCopycatFilesToClient(self:GetOwner())
 	
 	self:SetNextPrimaryFire(CurTime() + self.Delay)
 end

@@ -82,7 +82,7 @@ if SERVER then
 			return
 		end
 		
-		COPYCAT_DATA.DestroyBallot(ply)
+		COPYCAT_DATA.DestroyCCFilesGUI(ply)
 		
 		--Inform all clients that the corpse has Copycat Files (and therefore is a Copycat)
 		net.Start("TTT2CopycatFilesCorpseUpdate")
