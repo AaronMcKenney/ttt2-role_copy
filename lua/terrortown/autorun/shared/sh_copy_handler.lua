@@ -115,7 +115,7 @@ if SERVER then
 			
 			if cooldown > 0 then
 				timer.Create("CCFilesCooldownTimer_Server_" .. ply:SteamID64(), cooldown, 1, function() end)
-				STATUS:AddTimedStatus(ply, "ttt2_ccfiles_cooldown", cooldown, false)
+				STATUS:AddTimedStatus(ply, "ttt2_ccfiles_cooldown", cooldown, true)
 			end
 		end
 		
