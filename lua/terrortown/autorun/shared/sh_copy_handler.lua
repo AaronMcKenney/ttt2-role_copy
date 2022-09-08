@@ -71,21 +71,19 @@ if SERVER then
 		
 		if not ply.ccfiles_processing and GetRoundState() == ROUND_ACTIVE then
 			local client_ccfiles = {}
-			local ccfiles_len = 0
 			ply.ccfiles_processing = true
 			
 			InitCCFilesForPly(ply)
 			
-			for k,v in pairs(COPYCAT_FILES_DATA[ply:SteamID64()]) do
-				client_ccfiles[k] = (v == true or (not GetConVar("ttt2_copycat_once_per_role"):GetBool()))
-				--Need to keep track of table length here, as "#ccfiles" only works if the keys are contiguous integers.
-				--There is no built-in way to get the length of a  table. Lua is dumb.
-				ccfiles_len = ccfiles_len + 1
+			for role_id, picked_at_least_once in pairs(COPYCAT_FILES_DATA[ply:SteamID64()]) do
+				--Handle Copycat in the client end.
+				if role_id ~= ROLE_COPYCAT then
+					client_ccfiles[role_id] = (picked_at_least_once == true or (not GetConVar("ttt2_copycat_once_per_role"):GetBool()))
+				end
 			end
 			
 			net.Start("TTT2CopycatFilesRequest")
 			net.WriteTable(client_ccfiles)
-			net.WriteInt(ccfiles_len, 16)
 			net.Send(ply)
 		else
 			--Get rid of the Copycat files GUI when using primary fire again.
@@ -141,29 +139,60 @@ if CLIENT then
 			return
 		end
 		
+		--ccfiles is of the form: {role_id: selectable, ...}
 		local ccfiles = net.ReadTable()
-		local ccfiles_len = net.ReadInt(16)
-		
 		local client = LocalPlayer()
 		
+		--Remove previous GUI if it exists
 		COPYCAT_DATA.DestroyCCFilesGUI()
+		
+		--Lua is really dumb. It cannot sort a table that has strings as keys. A workaround is needed
+		--We'll have to sort the keys individually, and then iterate over this list and use these keys to index into ccfiles.
+		--We're doing this here since the Server's time is precious, 
+		--  and because net.ReadTable() does not guarrantee that the key-value pairs arrive in the same order as they are sent.
+		local sorted_keys = {}
+		local key_to_value = {}
+		for role_id, selectable in pairs(ccfiles) do
+			local role_data = roles.GetByIndex(role_id)
+			local ccfiles_entry_str = LANG.TryTranslation(role_data.name)
+			sorted_keys[#sorted_keys+1] = ccfiles_entry_str
+			key_to_value[ccfiles_entry_str] = {role_id, selectable}
+		end
+		table.sort(sorted_keys)
+		--Always append Copycat at the bottom of the list, for ease of use. It may always be used to return to the Copycat role if the player isn't already a Copycat.
+		local copycat_name = LANG.TryTranslation(roles.GetByIndex(ROLE_COPYCAT).name)
+		sorted_keys[#sorted_keys+1] = copycat_name
+		key_to_value[copycat_name] = {ROLE_COPYCAT, client:GetSubRole() ~= ROLE_COPYCAT}
 		
 		client.ccfiles_frame = vgui.Create("DFrame")
 		client.ccfiles_frame:SetTitle(LANG.TryTranslation("CCFILES_TITLE_" .. COPYCAT.name))
 		client.ccfiles_frame:SetPos(5, ScrH() / 3)
-		client.ccfiles_frame:SetSize(150, 10 + (20 * (ccfiles_len + 1)))
+		if #sorted_keys == 1 then
+			--Only Copycat is present. Use just enough height to display the title and the Copycat button.
+			client.ccfiles_frame:SetSize(150, 50)
+		else
+			--Can't use #ccfiles, as "#" only computes the size of an array if all of the keys are contiguous integers
+			--Add an additional 10 to the height. It will be used to space out Copycat button from the others above it.
+			client.ccfiles_frame:SetSize(150, 10 + (20 * (#sorted_keys + 1)) + 10)
+		end
 		client.ccfiles_frame:SetVisible(true)
 		client.ccfiles_frame:SetDraggable(false)
 		client.ccfiles_frame:ShowCloseButton(false)
 		
-		local i = 1
-		for role_id, selectable in pairs(ccfiles) do
-			local role_data = roles.GetByIndex(role_id)
-			local ccfiles_entry_str = LANG.TryTranslation(role_data.name)
+		for i=1, #sorted_keys do
+			local ccfiles_entry_str = sorted_keys[i]
+			local role_id = key_to_value[ccfiles_entry_str][1]
+			local selectable = key_to_value[ccfiles_entry_str][2]
 			local button = vgui.Create("DButton", client.ccfiles_frame)
 			
 			button:SetText(ccfiles_entry_str)
-			button:SetPos(0, 10 + (20 * i))
+			if role_id == ROLE_COPYCAT and #sorted_keys > 1 then
+				--Give Copycat role an additional 10 height to separate it from the other roles.
+				button:SetPos(0, 10 + (20 * i) + 10)
+			else
+				--Typical button position
+				button:SetPos(0, 10 + (20 * i))
+			end
 			button:SetSize(150,20)
 			button.DoClick = function()
 				net.Start("TTT2CopycatFilesResponse")
@@ -174,8 +203,6 @@ if CLIENT then
 			
 			--TODO: Per https://wiki.facepunch.com/gmod/DButton it may be better to use Panel:SetEnabled in some manner.
 			button:SetDisabled(not selectable)
-			
-			i = i + 1
 		end
 	end)
 	
