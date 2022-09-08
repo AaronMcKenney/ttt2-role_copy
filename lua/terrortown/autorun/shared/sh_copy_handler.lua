@@ -71,16 +71,21 @@ if SERVER then
 		
 		if not ply.ccfiles_processing and GetRoundState() == ROUND_ACTIVE then
 			local client_ccfiles = {}
+			local ccfiles_len = 0
 			ply.ccfiles_processing = true
 			
 			InitCCFilesForPly(ply)
 			
 			for k,v in pairs(COPYCAT_FILES_DATA[ply:SteamID64()]) do
 				client_ccfiles[k] = (v == true or (not GetConVar("ttt2_copycat_once_per_role"):GetBool()))
+				--Need to keep track of table length here, as "#ccfiles" only works if the keys are contiguous integers.
+				--There is no built-in way to get the length of a  table. Lua is dumb.
+				ccfiles_len = ccfiles_len + 1
 			end
 			
 			net.Start("TTT2CopycatFilesRequest")
 			net.WriteTable(client_ccfiles)
+			net.WriteInt(ccfiles_len, 16)
 			net.Send(ply)
 		else
 			--Get rid of the Copycat files GUI when using primary fire again.
@@ -137,6 +142,7 @@ if CLIENT then
 		end
 		
 		local ccfiles = net.ReadTable()
+		local ccfiles_len = net.ReadInt(16)
 		
 		local client = LocalPlayer()
 		
@@ -145,8 +151,7 @@ if CLIENT then
 		client.ccfiles_frame = vgui.Create("DFrame")
 		client.ccfiles_frame:SetTitle(LANG.TryTranslation("CCFILES_TITLE_" .. COPYCAT.name))
 		client.ccfiles_frame:SetPos(5, ScrH() / 3)
-		--For reasons unknown, have to add +2 to #ccfiles instead of +1 if #ccfiles == 1. Otherwise the size is not large enough to hold any buttons. Very confusing.
-		client.ccfiles_frame:SetSize(150, 10 + (20 * (math.max(#ccfiles + 1, 3))))
+		client.ccfiles_frame:SetSize(150, 10 + (20 * (ccfiles_len + 1)))
 		client.ccfiles_frame:SetVisible(true)
 		client.ccfiles_frame:SetDraggable(false)
 		client.ccfiles_frame:ShowCloseButton(false)
