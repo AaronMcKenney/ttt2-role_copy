@@ -64,6 +64,15 @@ if SERVER then
 		end
 	end)
 	
+	hook.Add("PlayerSwitchWeapon", "PlayerSwitchWeaponCopycat", function(ply, old, new)
+		if not IsValid(ply) or not ply:IsPlayer() or not ply.ccfiles_processing then
+			return
+		end
+		
+		--Get rid of Copycat Files GUI when switching weapons, to prevent the player from just leaving it up forever (both annoying for new players and weird meta tactic)
+		COPYCAT_DATA.DestroyCCFilesGUI(ply)
+	end)
+	
 	function COPYCAT_DATA.SendCopycatFilesToClient(ply)
 		if not ply or not IsValid(ply) or not ply:IsPlayer() then
 			return
