@@ -175,15 +175,17 @@ if CLIENT then
 		key_to_value[copycat_name] = {ROLE_COPYCAT, client:GetSubRole() ~= ROLE_COPYCAT}
 		
 		client.ccfiles_frame = vgui.Create("DFrame")
-		client.ccfiles_frame:SetTitle(LANG.TryTranslation("CCFILES_TITLE_" .. COPYCAT.name))
 		client.ccfiles_frame:SetPos(5, ScrH() / 3)
 		if #sorted_keys == 1 then
-			--Only Copycat is present. Use just enough height to display the title and the Copycat button.
-			client.ccfiles_frame:SetSize(150, 50)
+			--Inform newbies that they should collect more roles.
+			client.ccfiles_frame:SetTitle(LANG.TryTranslation("CCFILES_HELP_" .. COPYCAT.name))
+			--Only Copycat is present. Use just enough height to display the help section and the Copycat button.
+			client.ccfiles_frame:SetSize(175, 50)
 		else
+			client.ccfiles_frame:SetTitle(LANG.TryTranslation("CCFILES_TITLE_" .. COPYCAT.name))
 			--Can't use #ccfiles, as "#" only computes the size of an array if all of the keys are contiguous integers
 			--Add an additional 10 to the height. It will be used to space out Copycat button from the others above it.
-			client.ccfiles_frame:SetSize(150, 10 + (20 * (#sorted_keys + 1)) + 10)
+			client.ccfiles_frame:SetSize(175, 10 + (20 * (#sorted_keys + 1)) + 10)
 		end
 		client.ccfiles_frame:SetVisible(true)
 		client.ccfiles_frame:SetDraggable(false)
@@ -203,7 +205,7 @@ if CLIENT then
 				--Typical button position
 				button:SetPos(0, 10 + (20 * i))
 			end
-			button:SetSize(150,20)
+			button:SetSize(175, 20)
 			button.DoClick = function()
 				net.Start("TTT2CopycatFilesResponse")
 				net.WriteInt(role_id, 16)
