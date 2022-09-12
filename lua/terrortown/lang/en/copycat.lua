@@ -30,6 +30,7 @@ L["CCFILES_TITLE_" .. COPYCAT.name] = "Choose Your Role"
 L["CCFILES_COOLDOWN_" .. COPYCAT.name] = "ON COOLDOWN"
 L["CCFILES_INVALID_RESPONSE_" .. COPYCAT.name] = "Invalid response to the ballot! Received a role id of '{id}' with corresponding name of '{name}', which was not on the ballot."
 L["CCFILES_CORPSE_" .. COPYCAT.name] = "This person had The Copycat Files on them!"
+L["CCFILES_TRANSCRIBE_" .. COPYCAT.name] = "'{role}' has been added to your Copycat Files."
 
 --EVENT STRINGS
 -- Need to be very specifically worded, due to how the system translates them.
