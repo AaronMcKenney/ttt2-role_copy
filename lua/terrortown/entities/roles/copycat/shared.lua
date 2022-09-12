@@ -11,7 +11,7 @@ roles.InitCustomTeam(ROLE.name, {
 
 function ROLE:PreInitialize()
 	self.color = Color(152, 70, 211, 255)
-	self.abbr = "copy" -- abbreviation
+	self.abbr = "copy"
 	
 	self.score.teamKillsMultiplier = -16
 	self.score.killsMultiplier = 5
@@ -28,9 +28,15 @@ function ROLE:PreInitialize()
 	end
 	self.defaultEquipment = SPECIAL_EQUIPMENT
 	
+	--The player's role is not broadcasted to all other players.
+	self.isPublicRole = false
+	
 	--The Copycat will always be able to inspect bodies, confirm them, and be called to them.
-	--Downside is that I think they are given a hat, similar to Survivalist.
+	--Does not give them a Detective hat. That would only happen if isPublicRole is also set.
 	self.isPolicingRole = true
+	
+	--Traitor like behavior: Able to see missing in action players as well as the haste mode timer.
+	self.isOmniscientRole = true
 	
 	-- ULX ConVars
 	self.conVarData = {
