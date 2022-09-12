@@ -18,6 +18,8 @@ function COPYCAT_DATA.DestroyCCFilesGUI(ply)
 			client.ccfiles_frame:Close()
 		end
 		client.ccfiles_frame = nil
+		
+		hook.Remove("Think", "ThinkCopycatForClient")
 	end
 end
 
@@ -64,6 +66,11 @@ if SERVER then
 		
 		if rag.was_role and COPYCAT_FILES_DATA[ply:SteamID64()][rag.was_role] == nil then
 			COPYCAT_FILES_DATA[ply:SteamID64()][rag.was_role] = true
+			
+			--Resend the CCFiles if the client currently has the GUI open
+			if ply.ccfiles_processing then
+				COPYCAT_DATA.SendCopycatFilesToClient(ply, true)
+			end
 		end
 	end)
 	
@@ -76,12 +83,12 @@ if SERVER then
 		COPYCAT_DATA.DestroyCCFilesGUI(ply)
 	end)
 	
-	function COPYCAT_DATA.SendCopycatFilesToClient(ply)
+	function COPYCAT_DATA.SendCopycatFilesToClient(ply, resend)
 		if not ply or not IsValid(ply) or not ply:IsPlayer() then
 			return
 		end
 		
-		if not ply.ccfiles_processing and GetRoundState() == ROUND_ACTIVE then
+		if (not ply.ccfiles_processing or resend) and GetRoundState() == ROUND_ACTIVE then
 			local client_ccfiles = {}
 			ply.ccfiles_processing = true
 			
@@ -174,6 +181,7 @@ if CLIENT then
 		sorted_keys[#sorted_keys+1] = copycat_name
 		key_to_value[copycat_name] = {ROLE_COPYCAT, client:GetSubRole() ~= ROLE_COPYCAT}
 		
+		--Create GUI in its initial state
 		client.ccfiles_frame = vgui.Create("DFrame")
 		client.ccfiles_frame:SetPos(5, ScrH() / 3)
 		if #sorted_keys == 1 then
@@ -190,6 +198,8 @@ if CLIENT then
 		client.ccfiles_frame:SetVisible(true)
 		client.ccfiles_frame:SetDraggable(false)
 		client.ccfiles_frame:ShowCloseButton(false)
+		--Memorize FG color in case we enter then exit cooldown.
+		local default_fg_color = client.ccfiles_frame:GetFGColor()
 		
 		for i=1, #sorted_keys do
 			local ccfiles_entry_str = sorted_keys[i]
@@ -207,15 +217,35 @@ if CLIENT then
 			end
 			button:SetSize(175, 20)
 			button.DoClick = function()
-				net.Start("TTT2CopycatFilesResponse")
-				net.WriteInt(role_id, 16)
-				net.SendToServer()
-				COPYCAT_DATA.DestroyCCFilesGUI()
+				--If we're not on cooldown, we can send a request to change the Copycat's role.
+				if not STATUS:Active("ttt2_ccfiles_cooldown") then
+					net.Start("TTT2CopycatFilesResponse")
+					net.WriteInt(role_id, 16)
+					net.SendToServer()
+					COPYCAT_DATA.DestroyCCFilesGUI()
+				end
 			end
 			
 			--TODO: Per https://wiki.facepunch.com/gmod/DButton it may be better to use Panel:SetEnabled in some manner.
 			button:SetDisabled(not selectable)
 		end
+		
+		hook.Add("Think", "ThinkCopycatForClient", function()
+			local client = LocalPlayer()
+			
+			--Handle state transitions that can occur past the initial state (i.e. only Copycat listed) for the CCFiles GUI
+			if client.ccfiles_frame and client.ccfiles_frame.SetTitle then
+				if STATUS:Active("ttt2_ccfiles_cooldown") then
+					--CCFIles is on cooldown. Display in red to get the point across.
+					client.ccfiles_frame:SetFGColor(COLOR_RED)
+					client.ccfiles_frame:SetTitle(LANG.TryTranslation("CCFILES_COOLDOWN_" .. COPYCAT.name))
+				elseif #sorted_keys > 1 then
+					--CCFiles is off coolodwn and has at least one other role aside from Copycat. Usual title and color.
+					client.ccfiles_frame:SetFGColor(default_fg_color)
+					client.ccfiles_frame:SetTitle(LANG.TryTranslation("CCFILES_TITLE_" .. COPYCAT.name))
+				end
+			end
+		end)
 	end)
 	
 	net.Receive("TTT2CopycatFilesResponse", function()
