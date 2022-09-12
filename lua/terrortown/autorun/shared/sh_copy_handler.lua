@@ -67,6 +67,8 @@ if SERVER then
 		if rag.was_role and COPYCAT_FILES_DATA[ply:SteamID64()][rag.was_role] == nil then
 			COPYCAT_FILES_DATA[ply:SteamID64()][rag.was_role] = true
 			
+			events.Trigger(EVENT_COPY_TRANSCRIBE, ply, rag)
+			
 			--Resend the CCFiles if the client currently has the GUI open
 			if ply.ccfiles_processing then
 				COPYCAT_DATA.SendCopycatFilesToClient(ply, true)
