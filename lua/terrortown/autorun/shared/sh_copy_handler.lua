@@ -28,8 +28,8 @@ if SERVER then
 	--    List of roles that the player has (using their power as a copycat) made note of.
 	--      One of {nil: role has not been discovered, true: The player can become this role, false: the player has already been this role}
 	COPYCAT_FILES_DATA = {}
-
-	local function InitCCFilesForPly(ply)
+	
+	function COPYCAT_DATA.InitCCFilesForPly(ply)
 		--Create the Copycat Files structure for the given player if it doesn't already exist.
 		if not COPYCAT_FILES_DATA[ply:SteamID64()] then
 			COPYCAT_FILES_DATA[ply:SteamID64()] = {}
@@ -39,6 +39,8 @@ if SERVER then
 	end
 	
 	function COPYCAT_DATA.ResetCCFilesDataForServer()
+		COPYCAT_FILES_DATA = {}
+		
 		for _, ply in ipairs(player.GetAll()) do
 			--Remove the GUI for everyone so that it doesn't show up next round.
 			COPYCAT_DATA.DestroyCCFilesGUI(ply)
@@ -47,17 +49,18 @@ if SERVER then
 			if timer.Exists("CCFilesCooldownTimer_Server_" .. ply:SteamID64()) then
 				timer.Remove("CCFilesCooldownTimer_Server_" .. ply:SteamID64())
 			end
+			
+			--At the beginning of the round, resetting involves giving Copycats their initial CCFile state.
+			if GetRoundState() == ROUND_ACTIVE and ply:GetSubRole() == ROLE_COPYCAT then
+				COPYCAT_DATA.InitCCFilesForPly(ply)
+			end
 		end
-		
-		COPYCAT_FILES_DATA = {}
 	end
 	
 	hook.Add("TTTCanSearchCorpse", "TTTCanSearchCorpseCCFiles", function(ply, rag, isCovert, isLongRange)
 		if GetRoundState() ~= ROUND_ACTIVE or not IsValid(ply) or not ply:Alive() or not IsValid(rag) or not ply:HasWeapon("weapon_ttt2_copycat_files") then
 			return
 		end
-		
-		InitCCFilesForPly(ply)
 		
 		if rag.was_role and COPYCAT_FILES_DATA[ply:SteamID64()][rag.was_role] == nil then
 			COPYCAT_FILES_DATA[ply:SteamID64()][rag.was_role] = true
@@ -81,8 +84,6 @@ if SERVER then
 		if not ply.ccfiles_processing and GetRoundState() == ROUND_ACTIVE then
 			local client_ccfiles = {}
 			ply.ccfiles_processing = true
-			
-			InitCCFilesForPly(ply)
 			
 			for role_id, picked_at_least_once in pairs(COPYCAT_FILES_DATA[ply:SteamID64()]) do
 				--Handle Copycat in the client end.

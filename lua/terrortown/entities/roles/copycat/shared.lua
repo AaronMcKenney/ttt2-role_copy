@@ -6,7 +6,7 @@ end
 roles.InitCustomTeam(ROLE.name, {
 	icon = "vgui/ttt/dynamic/roles/icon_copy",
 	color = Color(152, 70, 211, 255),
-	sticky = true
+	--sticky = true --TODO: May be cool to introduce "sticky" teams and roles to handle cases where a role change ought to keep the Copycat's team (ex. Undecided)
 })
 
 function ROLE:PreInitialize()
@@ -68,13 +68,19 @@ if SERVER then
 	function ROLE:GiveRoleLoadout(ply, isRoleChange)
 		--The Copycat should hold onto their files for as long as possible, as they are used for role switches.
 		--The Copycat will hold onto this item even if they switch roles, as its primary use is to switch roles at will.
+		--  i.e. we do not strip this weapon on ROLE:RemoveRoleLoadout
 		if not ply:HasWeapon("weapon_ttt2_copycat_files") then
 			ply:GiveEquipmentWeapon("weapon_ttt2_copycat_files")
 		end
 		
 		--If the Copycat were to switch to a revival role, die, and then revive, they will lose their copycat files unless we remember them.
 		--Upon becoming a Copycat, they will remain a Copycat. Unless their team changes. Or the game ends.
+		--In addition, helps differentiate a player who spawned as a Copycat and a player who happens to be on the Copycat's team (ex. Thrall, Bodyguard)
 		ply.was_copycat = true
+		
+		--Init Copycat Files here (function does nothing if they've already been initialized)
+		--Needed in case someone becomes a Copycat in the middle of a round.
+		COPYCAT_DATA.InitCCFilesForPly(ply)
 	end
 	
 	hook.Add("PlayerDeath", "PlayerDeathCopycat", function(ply)
@@ -82,9 +88,11 @@ if SERVER then
 			return
 		end
 		
+		--Remove GUI on death
 		COPYCAT_DATA.DestroyCCFilesGUI(ply)
 		
-		--Inform all clients that the corpse has Copycat Files (and therefore is a Copycat)
+		--Inform all clients that the corpse has Copycat Files (and therefore is a Copycat).
+		--Needed in case the Copycat is using a different role
 		net.Start("TTT2CopycatFilesCorpseUpdate")
 		net.WriteEntity(ply)
 		net.WriteBool(true)
@@ -105,6 +113,15 @@ if SERVER then
 		net.WriteEntity(ply)
 		net.WriteBool(false)
 		net.Broadcast()
+	end)
+	
+	hook.Add("TTT2UpdateTeam", "TTT2UpdateTeamCopycat", function(ply, oldTeam, newTeam)
+		if ply and IsValid(ply) and ply:IsPlayer() and ply.was_copycat and ply:GetSubRole() ~= ROLE_COPYCAT and oldTeam ~= newTeam and newTeam ~= roles.GetByIndex(ROLE_COPYCAT).defaultTeam then
+			--The player was previously a Copycat, but now is a completely different role AND team (ex. they were taken down by an Infected).
+			--In such a case, they should no longer be internally labeled as a copycat and should lose their CCFiles
+			ply.was_copycat = nil
+			ply:StripWeapon("weapon_ttt2_copycat_files")
+		end
 	end)
 end
 
