@@ -43,4 +43,5 @@ Convars are variables that are introduced to allow server owners to customize th
  
 --
 [h1]Credits:[/h1]
-[URL=https://steamcommunity.com/profiles/76561198025772353/]BlackMagicFine[/URL]: creator of this role addon
+[URL=https://steamcommunity.com/profiles/76561198025772353/]BlackMagicFine[/URL]: creator of this role addon, icon, and thumbnail
+[URL=https://steamcommunity.com/id/cuckoo]cuckoo[/URL]: Released the [URL=https://steamcommunity.com/sharedfiles/filedetails/?id=1947794080]Petition[/URL] "weapon" for TTT2, whose model I stole for this role. OG model was made by [URL=https://steamcommunity.com/id/7800415511147]JλCK0L[/URL], which was translated to English by [URL=https://steamcommunity.com/id/16-Bytes]16 Bytes[/URL].
