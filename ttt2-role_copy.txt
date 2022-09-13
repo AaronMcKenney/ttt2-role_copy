@@ -12,7 +12,7 @@ The Copycat is a 3rd party neutral killer role, who has access to The Copycat Fi
  
 The Copycat additionally starts with a single credit and may accrue more credits through murder. However, they have no shop to spend them on. They'll have to switch to a Traitor, Detective, or other shopping role to make use of their hard earned cash.
  
-Naturally, this role works best on servers that have numerous roles installed
+Naturally, this role works best on servers that have numerous roles installed... provided that those roles have accounted for the possibility of being on a non-default team.
  
 [img]https://i.imgur.com/jIBWtbM.png[/img]
  
