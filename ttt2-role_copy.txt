@@ -8,7 +8,7 @@ Source: [url=https://github.com/AaronMcKenney/ttt2-role_copy]https://github.com/
  
 [img]https://i.imgur.com/KeP4fWN.png[/img]
  
-The Copycat is a 3rd party neutral killer role, who has access to The Copycat Files. Every time The Copycat inspects a dead body, their role is recorded in The Files. The Copycat can then use The Files to change their role to any of those that they have transcribed. However, they may only change roles every 30 seconds, and may not use the same role twice (aside from their original role). This latter restriction was added to prevent potential game breaking interactions wherein (for example) a Copycat abuses a revival role for infinite revivals (This restriction can be removed if you don't mind that).
+The Copycat is a 3rd party neutral killer role, who has access to The Copycat Files. The role of every corpse The Copycat investigates is transcribed in The Files. The Copycat can then use The Files to change their role to any of those that they have transcribed. However, they may only change roles every 30 seconds, and may not use the same role twice (aside from their original role). This latter restriction was added to prevent potential game breaking interactions wherein (for example) a Copycat abuses a revival role for infinite revivals (This restriction can be removed if you don't mind that).
  
 The Copycat additionally starts with a single credit and may accrue more credits through murder. However, they have no shop to spend them on. They'll have to switch to a Traitor, Detective, or other shopping role to make use of their hard earned cash.
  
