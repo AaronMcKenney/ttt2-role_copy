@@ -5,12 +5,12 @@ end
 
 roles.InitCustomTeam(ROLE.name, {
 	icon = "vgui/ttt/dynamic/roles/icon_copy",
-	color = Color(152, 70, 211, 255),
+	color = Color(225, 206, 245, 255),
 	--sticky = true --TODO: May be cool to introduce "sticky" teams and roles to handle cases where a role change ought to keep the Copycat's team (ex. Undecided)
 })
 
 function ROLE:PreInitialize()
-	self.color = Color(152, 70, 211, 255)
+	self.color = Color(225, 206, 245, 255)
 	self.abbr = "copy"
 	
 	self.score.teamKillsMultiplier = -16
