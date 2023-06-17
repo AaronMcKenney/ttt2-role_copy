@@ -33,7 +33,6 @@ if SERVER then
 			--player.GetBySteamID64 returns false if it can't find the player (ex. the player disconnected and left behind a ragdoll)
 			rag_name = "???"
 		end
-		print("BMF EVENT:Trigger: rag_name=" .. tostring(rag_name) .. ", rag.sid64=" .. tostring(rag.sid64))
 		
 		self:AddAffectedPlayers(
 			{copy:SteamID64(), rag.sid64},
