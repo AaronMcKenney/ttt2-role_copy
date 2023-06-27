@@ -39,7 +39,7 @@ Convars are variables that are introduced to allow server owners to customize th
 # Is the Copycat on The Doppelganger's Team?
   Note1: Even if this is enabled, The Copycat will be on their own team if the Doppelganger isn't installed.
   Note2: The server (and GMod if peer-to-peer) will need to be restarted in order for a change in this ConVar to take effect
-  ttt2_copycat_on_dop_team [0/1] (default: 1)[/code]
+  ttt2_copycat_on_dop_team [0/1] (default: 0)
  
 --
 [h1]Credits:[/h1]

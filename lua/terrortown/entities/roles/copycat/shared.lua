@@ -71,6 +71,48 @@ if SERVER then
 	hook.Add("TTTBeginRound", "TTTBeginRoundCopycatForServer", ResetCopycatForServer)
 	hook.Add("TTTEndRound", "TTTEndRoundCopycatForServer", ResetCopycatForServer)
 	
+	--COPY_DEBUG
+	--CreateConVar("ttt2_copycat_role_sync_test", "0", {FCVAR_ARCHIVE, FCVAR_NOTFIY})
+	--hook.Add("TTT2SyncGlobals", "TTT2SyncGlobalsCopycatTest", function()
+	--	SetGlobalInt("ttt2_copycat_role_sync_test", GetConVar("ttt2_copycat_role_sync_test"):GetInt())
+	--end)
+	--cvars.AddChangeCallback("ttt2_copycat_role_sync_test", function(name, old, new)
+	--	SetGlobalInt("ttt2_copycat_role_sync_test", tonumber(new))
+	--end)
+	--
+	--local function CopyRoleSyncTest(ply)
+	--	timer.Simple(10, function()
+	--		local copy_test = GetConVar("ttt2_copycat_role_sync_test"):GetInt()
+	--		if copy_test == 0 then
+	--			--Test: Look at a Copy!Detective as an Innocent
+	--			--Expect: See a Detective
+	--			ply:SetRole(ROLE_DETECTIVE, TEAM_COPYCAT)
+	--		elseif copy_test == 1 then
+	--			--Test: Look at a Copy!Traitor as a Traitor
+	--			--Expect: See a Traitor
+	--			ply:SetRole(ROLE_TRAITOR, TEAM_COPYCAT)
+	--		elseif copy_test == 2 then
+	--			--Test: Look at a Copy!Innocent as an Innocent
+	--			--Expect: See a NONE role
+	--			ply:SetRole(ROLE_INNOCENT, TEAM_COPYCAT)
+	--		elseif copy_test == 3 then
+	--			--Test: Look at a Copy!Innocent as a Traitor
+	--			--Expect: See a NONE role
+	--			ply:SetRole(ROLE_INNOCENT, TEAM_COPYCAT)
+	--		elseif copy_test == 4 then
+	--			--Test: Look at a Copy!Innocent as a Copy!Innocent
+	--			--Expect: See a Copy!Innocent
+	--			ply:SetRole(ROLE_INNOCENT, TEAM_COPYCAT)
+	--		elseif copy_test == 5 then
+	--			--Test: Look at a Traitor as a Copy!Traitor
+	--			--Expect: See a Traitor
+	--			ply:SetRole(ROLE_TRAITOR, TEAM_COPYCAT)
+	--		end
+	--		SendFullStateUpdate()
+	--	end)
+	--end
+	--COPY_DEBUG
+	
 	function ROLE:GiveRoleLoadout(ply, isRoleChange)
 		--The Copycat should hold onto their files for as long as possible, as they are used for role switches.
 		--The Copycat will hold onto this item even if they switch roles, as its primary use is to switch roles at will.
@@ -87,6 +129,10 @@ if SERVER then
 		--Init Copycat Files here (function does nothing if they've already been initialized)
 		--Needed in case someone becomes a Copycat in the middle of a round.
 		COPYCAT_DATA.InitCCFilesForPly(ply)
+		
+		--COPY_DEBUG
+		--CopyRoleSyncTest(ply)
+		--COPY_DEBUG
 	end
 	
 	hook.Add("PlayerDeath", "PlayerDeathCopycat", function(ply)

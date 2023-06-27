@@ -4,6 +4,14 @@ if SERVER then
 	util.AddNetworkString("TTT2CopycatFilesResponse")
 end
 
+local function IsInSpecDM(ply)
+	if SpecDM and (ply.IsGhost and ply:IsGhost()) then
+		return true
+	end
+
+	return false
+end
+
 COPYCAT_DATA = {}
 
 function COPYCAT_DATA.DestroyCCFilesGUI(ply)
@@ -110,6 +118,60 @@ if SERVER then
 			COPYCAT_DATA.DestroyCCFilesGUI(ply)
 		end
 	end
+
+	hook.Add("TTT2SpecialRoleSyncing", "TTT2SpecialRoleSyncingCopycat", function (ply, tbl)
+		if GetRoundState() == ROUND_POST then
+			return
+		end
+		
+		local ply_subrole_data = ply:GetSubRoleData()
+		
+		for ply_i in pairs(tbl) do
+			if not ply_i:Alive() or IsInSpecDM(ply_i) then
+				continue
+			end
+			
+			local ply_i_subrole_data = ply_i:GetSubRoleData()
+			
+			if ply:GetTeam() ~= TEAM_COPYCAT and ply_i:GetTeam() == TEAM_COPYCAT and
+				(ply_i_subrole_data.isPublicRole or (ply:GetTeam() == ply_i_subrole_data.defaultTeam and not ply_subrole_data.unknownTeam)) then
+				--Handle how a non-Copycat sees someone on the Copycat Team
+				--A public Copycat will always lie about its team, lest it be shotdown in 5 seconds flat.
+				--If a non-Copycat knows about other players on their team (ex. Traitors), then the Copycat on that team will have their role be visible, but will lie about its team.
+				tbl[ply_i] = {ply_i:GetSubRole(), ply_i_subrole_data.defaultTeam}
+			elseif ply:GetTeam() == TEAM_COPYCAT then
+				--Handle how the Copycat sees everyone else
+				if ply_i:GetTeam() == TEAM_COPYCAT then
+					--If the Copycat has friends, they aren't likely to consistently have roles with unknownTeam set to false. So force them all to know each other, to allow for shennanigans through teamwork.
+					tbl[ply_i] = {ply_i:GetSubRole(), TEAM_COPYCAT}
+				elseif ply_i:GetTeam() == ply_subrole_data.defaultTeam and not ply_subrole_data.unknownTeam then
+					--If a Copycat's role permits it to see other members on its default team (ex. Traitors) then the Copycat should be able to see its fake friends.
+					tbl[ply_i] = {ply_i:GetSubRole(), ply_i_subrole_data.defaultTeam}
+				end
+			end
+		end
+	end)
+	
+	hook.Add("TTT2ModifyRadarRole", "TTT2ModifyRadarRoleCopycat", function(ply, target)
+		--This function uses the same general logic as TTT2SpecialRoleSyncing, for consistency
+		if GetRoundState() == ROUND_POST then
+			return
+		end
+		
+		local ply_subrole_data = ply:GetSubRoleData()
+		local target_subrole_data = target:GetSubRoleData()
+		
+		if ply:GetTeam() ~= TEAM_COPYCAT and target:GetTeam() == TEAM_COPYCAT and
+			(target_subrole_data.isPublicRole or (ply:GetTeam() == target_subrole_data.defaultTeam and not ply_subrole_data.unknownTeam)) then
+			return target:GetSubRole(), target_subrole_data.defaultTeam
+		elseif ply:GetTeam() == TEAM_COPYCAT then
+			if target:GetTeam() == TEAM_COPYCAT then
+				return target:GetSubRole(), TEAM_COPYCAT
+			elseif target:GetTeam() == ply_subrole_data.defaultTeam and not ply_subrole_data.unknownTeam then
+				return target:GetSubRole(), target_subrole_data.defaultTeam
+			end
+		end
+	end)
 	
 	net.Receive("TTT2CopycatFilesResponse", function(len, ply)
 		local role_id = net.ReadInt(16)
