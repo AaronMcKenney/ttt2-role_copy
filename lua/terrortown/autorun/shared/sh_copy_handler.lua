@@ -139,13 +139,13 @@ if SERVER then
 				--A public Copycat will always lie about its team, lest it be shotdown in 5 seconds flat.
 				--If a non-Copycat knows about other players on their team (ex. Traitors), then the Copycat on that team will have their role be visible, but will lie about its team.
 				tbl[ply_i] = {ply_i:GetSubRole(), ply_i_subrole_data.defaultTeam}
-			elseif ply:GetTeam() == TEAM_COPYCAT then
+			elseif ply:GetTeam() == TEAM_COPYCAT and ply:HasWeapon("weapon_ttt2_copycat_files") then
 				--Handle how the Copycat sees everyone else
-				if ply_i:GetTeam() == TEAM_COPYCAT then
-					--If the Copycat has friends, they aren't likely to consistently have roles with unknownTeam set to false. So force them all to know each other, to allow for shennanigans through teamwork.
+				if ply_i:GetTeam() == TEAM_COPYCAT and ply_i:HasWeapon("weapon_ttt2_copycat_files") then
+					--If the Copycat has fellow copycats, they aren't likely to consistently have roles with unknownTeam set to false. So force them all to know each other, to allow for shennanigans through teamwork.
 					tbl[ply_i] = {ply_i:GetSubRole(), TEAM_COPYCAT}
-				elseif ply_i:GetTeam() == ply_subrole_data.defaultTeam and not ply_subrole_data.unknownTeam then
-					--If a Copycat's role permits it to see other members on its default team (ex. Traitors) then the Copycat should be able to see its fake friends.
+				elseif ply_i:GetTeam() ~= TEAM_COPYCAT and ply_i:GetTeam() == ply_subrole_data.defaultTeam and not ply_subrole_data.unknownTeam then
+					--If a Copycat's role permits it to see other antagonistic members on their default team (ex. Traitors) then the Copycat should be able to see its fake friends.
 					tbl[ply_i] = {ply_i:GetSubRole(), ply_i_subrole_data.defaultTeam}
 				end
 			end
@@ -164,10 +164,10 @@ if SERVER then
 		if ply:GetTeam() ~= TEAM_COPYCAT and target:GetTeam() == TEAM_COPYCAT and
 			(target_subrole_data.isPublicRole or (ply:GetTeam() == target_subrole_data.defaultTeam and not ply_subrole_data.unknownTeam)) then
 			return target:GetSubRole(), target_subrole_data.defaultTeam
-		elseif ply:GetTeam() == TEAM_COPYCAT then
-			if target:GetTeam() == TEAM_COPYCAT then
+		elseif ply:GetTeam() == TEAM_COPYCAT and ply:HasWeapon("weapon_ttt2_copycat_files") then
+			if target:GetTeam() == TEAM_COPYCAT and target:HasWeapon("weapon_ttt2_copycat_files") then
 				return target:GetSubRole(), TEAM_COPYCAT
-			elseif target:GetTeam() == ply_subrole_data.defaultTeam and not ply_subrole_data.unknownTeam then
+			elseif target:GetTeam() ~= TEAM_COPYCAT and target:GetTeam() == ply_subrole_data.defaultTeam and not ply_subrole_data.unknownTeam then
 				return target:GetSubRole(), target_subrole_data.defaultTeam
 			end
 		end

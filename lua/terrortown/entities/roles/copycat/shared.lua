@@ -107,6 +107,10 @@ if SERVER then
 	--			--Test: Look at a Traitor as a Copy!Traitor
 	--			--Expect: See a Traitor
 	--			ply:SetRole(ROLE_TRAITOR, TEAM_COPYCAT)
+	--		elseif copy_test == 6 then
+	--			--Test: Look at a Copy!Redacted as a Redacted
+	--			--Expect: See a NONE role
+	--			ply:SetRole(ROLE_REDACTED, TEAM_COPYCAT)
 	--		end
 	--		SendFullStateUpdate()
 	--	end)
