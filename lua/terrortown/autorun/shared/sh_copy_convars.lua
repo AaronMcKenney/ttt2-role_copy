@@ -1,5 +1,6 @@
 --ConVar syncing
 CreateConVar("ttt2_copycat_once_per_role", "1", {FCVAR_ARCHIVE, FCVAR_NOTFIY})
+CreateConVar("ttt2_copycat_permanent", "0", {FCVAR_ARCHIVE, FCVAR_NOTFIY})
 CreateConVar("ttt2_copycat_role_change_cooldown", "30", {FCVAR_ARCHIVE, FCVAR_NOTFIY})
 CreateConVar("ttt2_copycat_on_dop_team", "0", {FCVAR_ARCHIVE, FCVAR_NOTFIY})
 
@@ -13,6 +14,15 @@ hook.Add("TTTUlxDynamicRCVars", "TTTUlxDynamicCopycatCVars", function(tbl)
 		cvar = "ttt2_copycat_once_per_role",
 		checkbox = true,
 		desc = "ttt2_copycat_once_per_role (Def: 1)"
+	})
+	
+	--# Is the Copycat's role change permanent?
+	--  Note1: Takes priority over ttt2_copycat_once_per_role
+	--  ttt2_copycat_permanent [0/1] (default: 0)
+	table.insert(tbl[ROLE_COPYCAT], {
+		cvar = "ttt2_copycat_permanent",
+		checkbox = true,
+		desc = "ttt2_copycat_permanent (Def: 0)"
 	})
 
 	--# How many seconds must pass until The Copycat can change their role again?
@@ -39,12 +49,16 @@ end)
 
 hook.Add("TTT2SyncGlobals", "AddCopycatGlobals", function()
 	SetGlobalBool("ttt2_copycat_once_per_role", GetConVar("ttt2_copycat_once_per_role"):GetBool())
+	SetGlobalBool("ttt2_copycat_permanent", GetConVar("ttt2_copycat_permanent"):GetBool())
 	SetGlobalInt("ttt2_copycat_role_change_cooldown", GetConVar("ttt2_copycat_role_change_cooldown"):GetInt())
 	SetGlobalBool("ttt2_copycat_on_dop_team", GetConVar("ttt2_copycat_on_dop_team"):GetBool())
 end)
 
 cvars.AddChangeCallback("ttt2_copycat_once_per_role", function(name, old, new)
 	SetGlobalBool("ttt2_copycat_once_per_role", tobool(tonumber(new)))
+end)
+cvars.AddChangeCallback("ttt2_copycat_permanent", function(name, old, new)
+	SetGlobalBool("ttt2_copycat_permanent", tobool(tonumber(new)))
 end)
 cvars.AddChangeCallback("ttt2_copycat_role_change_cooldown", function(name, old, new)
 	SetGlobalInt("ttt2_copycat_role_change_cooldown", tonumber(new))

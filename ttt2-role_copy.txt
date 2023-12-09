@@ -34,6 +34,9 @@ Convars are variables that are introduced to allow server owners to customize th
 [code]# Can the Copycat only switch to a given role once per game?
   Note1: If disabled, I can't guarrantee that this won't cause role abuse (ex. constantly swapping between revival roles for infinite lives)
   ttt2_copycat_once_per_role [0/1] (default: 1)
+# Is the Copycat's role change permanent?
+  Note1: Takes priority over ttt2_copycat_once_per_role
+  ttt2_copycat_permanent [0/1] (default: 0)
 # How many seconds must pass until The Copycat can change their role again?
   ttt2_copycat_role_change_cooldown [0..n] (default: 30)
 # Is the Copycat on The Doppelganger's Team?

@@ -106,7 +106,11 @@ if SERVER then
 			for role_id, picked_at_least_once in pairs(COPYCAT_FILES_DATA[ply:SteamID64()]) do
 				--Handle Copycat in the client end.
 				if role_id ~= ROLE_COPYCAT then
-					client_ccfiles[role_id] = (picked_at_least_once == true or (not GetConVar("ttt2_copycat_once_per_role"):GetBool()))
+					client_ccfiles[role_id] = (picked_at_least_once == true or not GetConVar("ttt2_copycat_once_per_role"):GetBool())
+					if GetConVar("ttt2_copycat_permanent"):GetBool() and ply:GetSubRole() ~= ROLE_COPYCAT then
+						--Lock the player into their current non-Copycat role.
+						client_ccfiles[role_id] = false
+					end
 				end
 			end
 			
@@ -175,9 +179,6 @@ if SERVER then
 	
 	net.Receive("TTT2CopycatFilesResponse", function(len, ply)
 		local role_id = net.ReadInt(16)
-		local role_id_is_valid = (COPYCAT_FILES_DATA[ply:SteamID64()] ~= nil and COPYCAT_FILES_DATA[ply:SteamID64()][role_id] ~= nil and (COPYCAT_FILES_DATA[ply:SteamID64()][role_id] == true or not GetConVar("ttt2_copycat_once_per_role"):GetBool()))
-		local cooldown = GetConVar("ttt2_copycat_role_change_cooldown"):GetInt()
-		local under_cooldown = timer.Exists("CCFilesCooldownTimer_Server_" .. ply:SteamID64())
 		
 		if role_id == ROLE_NONE then
 			--Client has opted to not change their role, and merely wanted to destroy the GUI.
@@ -185,10 +186,16 @@ if SERVER then
 			return
 		end
 		
+		local cooldown = GetConVar("ttt2_copycat_role_change_cooldown"):GetInt()
+		local under_cooldown = timer.Exists("CCFilesCooldownTimer_Server_" .. ply:SteamID64())
+		local role_id_is_valid = (COPYCAT_FILES_DATA[ply:SteamID64()] ~= nil and COPYCAT_FILES_DATA[ply:SteamID64()][role_id] ~= nil and (COPYCAT_FILES_DATA[ply:SteamID64()][role_id] == true or not GetConVar("ttt2_copycat_once_per_role"):GetBool()))
+		if GetConVar("ttt2_copycat_permanent"):GetBool() and ply:GetSubRole() ~= ROLE_COPYCAT then
+			--The role is never valid if the player has already been locked into a different role.
+			role_id_is_valid = false
+		end
+		
 		if not role_id_is_valid then
-			local role_data = roles.GetByIndex(role_id)
-			local role_name = LANG.TryTranslation(role_data.name)
-			LANG.Msg(ply, "CCFILES_INVALID_RESPONSE_" .. COPYCAT.name, {id=tostring(role_id), name=tostring(role_name)}, MSG_MSTACK_WARN)
+			LANG.Msg(ply, "CCFILES_INVALID_RESPONSE_" .. COPYCAT.name, nil, MSG_MSTACK_WARN)
 		elseif GetRoundState() == ROUND_ACTIVE and ply:Alive() and not under_cooldown and ply.ccfiles_processing and role_id ~= ply:GetSubRole() then
 			ply:SetRole(role_id, ply:GetTeam())
 			SendFullStateUpdate()
@@ -244,7 +251,7 @@ if CLIENT then
 		--Always append Copycat at the bottom of the list, for ease of use. It may always be used to return to the Copycat role if the player isn't already a Copycat.
 		local copycat_name = LANG.TryTranslation(roles.GetByIndex(ROLE_COPYCAT).name)
 		sorted_keys[#sorted_keys+1] = copycat_name
-		key_to_value[copycat_name] = {ROLE_COPYCAT, client:GetSubRole() ~= ROLE_COPYCAT}
+		key_to_value[copycat_name] = {ROLE_COPYCAT, client:GetSubRole() ~= ROLE_COPYCAT and not GetConVar("ttt2_copycat_permanent"):GetBool()}
 		
 		--Create GUI in its initial state
 		client.ccfiles_frame = vgui.Create("DFrame")
@@ -301,12 +308,9 @@ if CLIENT then
 			--Handle state transitions that can occur past the initial state (i.e. only Copycat listed) for the CCFiles GUI
 			if client.ccfiles_frame and client.ccfiles_frame.SetTitle then
 				if STATUS:Active("ttt2_ccfiles_cooldown") then
-					--CCFIles is on cooldown. Display in red to get the point across.
-					client.ccfiles_frame:SetFGColor(COLOR_RED)
 					client.ccfiles_frame:SetTitle(LANG.TryTranslation("CCFILES_COOLDOWN_" .. COPYCAT.name))
 				elseif #sorted_keys > 1 then
-					--CCFiles is off coolodwn and has at least one other role aside from Copycat. Usual title and color.
-					client.ccfiles_frame:SetFGColor(default_fg_color)
+					--CCFiles is off coolodwn and has at least one other role aside from Copycat.
 					client.ccfiles_frame:SetTitle(LANG.TryTranslation("CCFILES_TITLE_" .. COPYCAT.name))
 				end
 			end
