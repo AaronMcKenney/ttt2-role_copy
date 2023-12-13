@@ -38,3 +38,9 @@ L["title_event_copy_transcribe"] = "A Copycat has transcribed a new role"
 L["desc_event_copy_transcribe"] = "{name1} transcribed {name2}'s role: '{role}'."
 L["tooltip_copy_transcribe_score"] = "Transcribed Roles: {score}"
 L["copy_transcribe_score"] = "Transcribed Roles:"
+
+--CONVAR STRINGS
+L["label_copycat_once_per_role"] = "The Copycat can switch to a given role once per game"
+L["label_copycat_permanent"] = "The Copycat's role change is permanent"
+L["label_copycat_role_change_cooldown"] = "# seconds until the Copycat can switch roles again"
+L["label_copycat_on_dop_team"] = "The Copycat is on the Doppelganger's team"

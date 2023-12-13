@@ -212,4 +212,34 @@ if CLIENT then
 		
 		search.was_copycat = {img = "vgui/ttt/dynamic/roles/icon_copy.vmt", text = LANG.GetTranslation("CCFILES_CORPSE_" .. COPYCAT.name), p = highest_id + 1}
 	end)
+
+	-------------
+	-- CONVARS --
+	-------------
+		function ROLE:AddToSettingsMenu(parent)
+			local form = vgui.CreateTTT2Form(parent, "header_roles_additional")
+
+			form:MakeCheckBox({
+				serverConvar = "ttt2_copycat_once_per_role",
+				label = "label_copycat_once_per_role"
+			})
+
+			form:MakeCheckBox({
+				serverConvar = "ttt2_copycat_permanent",
+				label = "label_copycat_permanent"
+			})
+
+			form:MakeSlider({
+				serverConvar = "ttt2_copycat_role_change_cooldown",
+				label = "label_copycat_role_change_cooldown",
+				min = 0,
+				max = 120,
+				decimal = 0
+			})
+
+			form:MakeCheckBox({
+				serverConvar = "ttt2_copycat_on_dop_team",
+				label = "label_copycat_on_dop_team"
+			})
+		end
 end
